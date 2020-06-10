@@ -8,7 +8,7 @@
 
 import Foundation
 
-class Task {
+class Task : Codable {
     var name : String = ""
     var isDone : Bool = false
 }

@@ -10,20 +10,20 @@ import UIKit
 
 class TodoViewController: UITableViewController {
     var taskArray = [Task]()
-    let defaults = UserDefaults.standard
+    //let defaults = UserDefaults.standard
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
  
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        for i in 0...5{
-            let task = Task()
-            task.name = "Name \(i)"
-            task.isDone = true
-            taskArray.append(task)
-        }
-        /*if let item = defaults.array(forKey: "Tasks") as? [Task]{
-            taskArray = item
-        }*/
+        loadTasks()
+    }
+    func loadTasks(){
+        if let data = try? Data(contentsOf: dataFilePath!){
+                   let decoder = PropertyListDecoder()
+                   if let taskData = try? decoder.decode([Task].self, from: data){
+                       taskArray = taskData
+                   }
+               }
     }
     @IBAction func onAddPressed(_ sender: UIBarButtonItem) {
         let alert = UIAlertController(title: "Add new items", message: "", preferredStyle: .alert)
@@ -33,12 +33,11 @@ class TodoViewController: UITableViewController {
             newTask.name = textField.text!
             newTask.isDone = false
             self.taskArray.append(newTask)
-            //self.defaults.set(self.taskArray, forKey: "Tasks")
+            self.saveItems()
             self.tableView.reloadData()
             }
         alert.addTextField { (UITextField) in
             UITextField.placeholder = "Place holder"
-            
         }
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
@@ -49,27 +48,26 @@ class TodoViewController: UITableViewController {
 
     // Provide a cell object for each row.
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-       // Fetch a cell of the appropriate type.
-       let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
-       // Configure the cell’s contents.
+        let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
         cell.textLabel!.text = taskArray[indexPath.row].name
-//        if taskArray[indexPath.row].isDone == true{
-            cell.accessoryType = taskArray[indexPath.row].isDone ? .checkmark : .none
-  //      }else{
-    //        cell.accessoryType = .none
-            
-      //  }
-       return cell
+        cell.accessoryType = taskArray[indexPath.row].isDone ? .checkmark : .none
+        return cell
     }
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        /*if taskArray[indexPath.row].isDone == true{
-            taskArray[indexPath.row].isDone = false
-        }else{
-            taskArray[indexPath.row].isDone = true
-        }*/
         taskArray[indexPath.row].isDone = !taskArray[indexPath.row].isDone
+        saveItems()
         tableView.reloadData()
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+    func saveItems(){
+        let encoder = PropertyListEncoder()
+        do{
+            let data = try encoder.encode(taskArray)
+            
+            try data.write(to: dataFilePath!)
+        }catch{
+            
+        }
     }
 }
 
