@@ -49,8 +49,10 @@ class TodoViewController: UITableViewController {
         return cell
     }
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        taskArray[indexPath.row].done = !taskArray[indexPath.row].done
-        taskArray[indexPath.row].setValue("new one", forKey: "name")
+        //taskArray[indexPath.row].done = !taskArray[indexPath.row].done
+        //taskArray[indexPath.row].setValue("new one", forKey: "name")
+        context.delete(taskArray[indexPath.row])
+        taskArray.remove(at: indexPath.row)
         saveItems()
         tableView.deselectRow(at: indexPath, animated: true)
     }
